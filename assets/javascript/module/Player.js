@@ -11,7 +11,10 @@ define(['module/HUD'],function(HUD){
         _score = null,
         _firingTime = null,
         _ship = null,
-        _cursors = null,
+        _buttons = {
+            leftPressed: null,
+            rightPressed: null
+        },
         _bulletGroup = null,
         _bullet = null,
         _explosionGroup = null,
@@ -39,9 +42,10 @@ define(['module/HUD'],function(HUD){
         bullet.kill();
         HUD.updateHealthText(ship.health);
         
-        //ship lose a life
-        if(ship.health == 0){            
+        // Ship loses a life
+        if (ship.health == 0) {
             this.stopShooting();
+            this.unbindPlayerChannelEvents();
             _explosion = _explosionGroup.getFirstExists(false);
             _explosion.reset(_ship.body.x,_ship.body.y);
             _explosion.play('kaboom',30,false,true);
@@ -50,20 +54,45 @@ define(['module/HUD'],function(HUD){
             HUD.updateLivesText(_lives);
             
             //lose life
-            if(_lives > 0){                
+            if (_lives > 0){          
+                this.bindPlayerChannelEvents();
                 ship.revive(_health);
                 this.startShooting();
             //dead
             }else{
+                this.unbindPlayerChannelEvents();
                 _game.state.start('End');
             }
         }
 
     };
 
-    return{
+    var _pressedLeft = function(pushData) {
+        _buttons.rightPressed = false;
+        _buttons.leftPressed = true;
+        this.update();
+    };
+
+    var _releasedLeft = function(pushData) {
+        _buttons.leftPressed = false;
+        this.update();
+    };
+
+    var _pressedRight = function(pushData) {
+        _buttons.leftPressed = false;
+        _buttons.rightPressed = true;
+        this.update();
+    };
+
+    var _releasedRight = function(pushData) {
+        _buttons.rightPressed = false;
+        this.update();
+    };
+
+
+    return {
         init: function(game){
-            _game = game;            
+            _game = game;
         },
         preload: function(){
             _game.load.image('ship', 'assets/img/player.png');
@@ -80,16 +109,31 @@ define(['module/HUD'],function(HUD){
             _firingTime = configuration.firingTime;
             _bulletSpeed = configuration.bulletSpeed;
 
-            _cursors = _game.input.keyboard.createCursorKeys();
+            // _cursors = _game.input.keyboard.createCursorKeys();
+            
+            // Subscribe to left and right key presses and releases
+            this.bindPlayerChannelEvents();
         },
         update: function(){
             _ship.body.velocity.setTo(0,0);
 
-            if(_cursors.left.isDown){
+            if(_buttons.leftPressed){
                 _ship.body.velocity.x = -200;
-            }else if(_cursors.right.isDown){
+            }else if(_buttons.rightPressed){
                 _ship.body.velocity.x = 200;
             }
+        },
+        bindPlayerChannelEvents: function() {
+            _game.pushChannel.bind('press_l', _pressedLeft);
+            _game.pushChannel.bind('release_l', _releasedLeft);
+            _game.pushChannel.bind('press_r', _pressedRight);
+            _game.pushChannel.bind('release_r', _releasedRight);
+        },
+        unbindPlayerChannelEvents: function() {
+            _game.pushChannel.unbind('press_l', _pressedLeft);
+            _game.pushChannel.unbind('release_l', _releasedLeft);
+            _game.pushChannel.unbind('press_r', _pressedRight);
+            _game.pushChannel.unbind('release_r', _releasedRight);
         },
         setBulletGroup: function(bullets){
             _bulletGroup = bullets.getBulletGroup();
@@ -99,7 +143,7 @@ define(['module/HUD'],function(HUD){
         },
         setExplosionGroup: function(explosions){
             _explosionGroup = explosions.getExplosionGroup();
-        },        
+        },
         startShooting: function(){
             _shootingEvent = _game.time.events.loop(_firingTime,_fireBullet,this);
         },
@@ -116,5 +160,5 @@ define(['module/HUD'],function(HUD){
             _aliens = aliens;
             _alienGroup=aliens.getAlienGroup();
         }
-    }
+    };
 });
