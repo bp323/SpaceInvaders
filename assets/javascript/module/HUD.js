@@ -10,12 +10,16 @@ define(function(){
         _livesText = null,
         _score = null,
         _scoreText = null,
-        _stateText = null;
+        _stateText = null,
+        _getTotalScore = function() {
+            return (parseInt(_health, 10) * parseInt(_lives, 10)) + parseInt(_score, 10);
+        };
 
     return{
         init: function(game){
             _game = game;
         },
+        getTotalScore: _getTotalScore,
         getScore: function() {
             return parseInt(_score, 10);
         },
@@ -32,13 +36,15 @@ define(function(){
 
             //_stateText.visible = false;
         },
-        updateHealthText: function(health){
-            _healthText.text = "Health: "+health;
+        updateHealthText: function(health) {
+            _health = health;
+            _healthText.text = "Health: " + health;
         },
-        updateLivesText: function(lives){
-            _livesText.text = "Lives: "+lives;
+        updateLivesText: function(lives) {
+            _lives = lives;
+            _livesText.text = "Lives: " + lives;
         },
-        updateScoreText: function(score){
+        updateScoreText: function(score) {
             _score = _score + score;
             _scoreText.text = "Score: " + _score;
         },
@@ -48,13 +54,15 @@ define(function(){
             _stateText.anchor.setTo(0.5,0.5);
         },
         createScoreBoard: function(scores) {
-            _stateText = _game.add.text(_game.world.centerX, 50, 'High scores', {font: '80px Arial', fill: '#FFF', align: "center"});
+            _stateText = _game.add.text(_game.world.centerX, 50, 'High scores', {font: '40px Arial', fill: '#FFF', align: "center"});
+            _stateText.anchor.setTo(0.5, 0.5);
+            _stateText = _game.add.text(_game.world.centerX, 100, 'Total score: ' + _getTotalScore(), {font: '20px Arial', fill: '#FFF', align: "center"});
             _stateText.anchor.setTo(0.5, 0.5);
             for (var i = 0; i < scores.length; i++) {
                 _stateText = _game.add.text(220, 100 + ((i + 1) * 30), (i + 1) + '   ' + scores[i].displayName, {font: '20px Arial', fill: '#FFF'});
                 _stateText = _game.add.text(530, 100 + ((i + 1) * 30), scores[i].score, {font: '20px Arial', fill: '#FFF'});
             }
-            _stateText = _game.add.text(_game.world.centerX, 500, 'Press A to play', {font: '80px Arial', fill: '#FFF', align: "center"});
+            _stateText = _game.add.text(_game.world.centerX, 500, 'Press A to play', {font: '40px Arial', fill: '#FFF', align: "center"});
             _stateText.anchor.setTo(0.5, 0.5);
         }
     };

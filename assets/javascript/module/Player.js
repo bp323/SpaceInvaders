@@ -38,12 +38,12 @@ define(['module/HUD'],function(HUD){
     // Add a postScore function to the global game object
     var postScore = function() {
         $.ajax({
-            'url': 'http://localhost:3000/scores',
+            'url': '/scores',
             'method': 'post',
             'data': {
                 'score': {
                     'displayName': 'Bert Pareyn',
-                    'score': HUD.getScore()
+                    'score': HUD.getTotalScore()
                 }
             },
             'success': function(scores) {
