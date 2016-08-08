@@ -16,6 +16,9 @@ define(function(){
         init: function(game){
             _game = game;
         },
+        getScore: function() {
+            return parseInt(_score, 10);
+        },
         preload: function(){
             //_game.load.image('ship', 'assets/img/player.png');
         },
@@ -26,7 +29,7 @@ define(function(){
             _healthText = _game.add.text(10, 50, "Health: " + health, { fontSize: '34px', fill: '#fff' });
             _lives = lives;
             _livesText = _game.add.text(10, 90, "Lives: " + lives, { fontSize: '34px', fill: '#fff' });
-            
+
             //_stateText.visible = false;
         },
         updateHealthText: function(health){
@@ -36,12 +39,23 @@ define(function(){
             _livesText.text = "Lives: "+lives;
         },
         updateScoreText: function(score){
-            _scoreText.text = "Score: "+(_score+=score);
+            _score = _score + score;
+            _scoreText.text = "Score: " + _score;
         },
         createTitle: function(title){
             _stateText = _game.add.text(_game.world.centerX,_game.world.centerY,
-                                            title,{font: '84px Arial',fill: '#fff'})
+                                            title,{font: '84px Arial',fill: '#fff', align: "center"});
             _stateText.anchor.setTo(0.5,0.5);
+        },
+        createScoreBoard: function(scores) {
+            _stateText = _game.add.text(_game.world.centerX, 50, 'High scores', {font: '80px Arial', fill: '#FFF', align: "center"});
+            _stateText.anchor.setTo(0.5, 0.5);
+            for (var i = 0; i < scores.length; i++) {
+                _stateText = _game.add.text(220, 100 + ((i + 1) * 30), (i + 1) + '   ' + scores[i].displayName, {font: '20px Arial', fill: '#FFF'});
+                _stateText = _game.add.text(530, 100 + ((i + 1) * 30), scores[i].score, {font: '20px Arial', fill: '#FFF'});
+            }
+            _stateText = _game.add.text(_game.world.centerX, 500, 'Press A to play', {font: '80px Arial', fill: '#FFF', align: "center"});
+            _stateText.anchor.setTo(0.5, 0.5);
         }
-    }
+    };
 });

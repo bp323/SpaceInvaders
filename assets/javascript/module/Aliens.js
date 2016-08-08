@@ -89,7 +89,7 @@ define(['module/HUD'],function(HUD){
                 }
             //all alien died
             }else if(_livingAlien.length == 0){
-                _game.state.start('End');
+                _game.postScore();
             }
 
         };

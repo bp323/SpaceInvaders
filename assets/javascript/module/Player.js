@@ -35,6 +35,24 @@ define(['module/HUD'],function(HUD){
         }
     };
 
+    // Add a postScore function to the global game object
+    var postScore = function() {
+        $.ajax({
+            'url': 'http://localhost:3000/scores',
+            'method': 'post',
+            'data': {
+                'score': {
+                    'displayName': 'Bert Pareyn',
+                    'score': HUD.getScore()
+                }
+            },
+            'success': function(scores) {
+                _game.scoreBoard = scores;
+                _game.state.start('Score');
+            }
+        });
+    };
+
     var _collisionHandler = function(ship,bullet){
 
         ship.damage(bullet.bulletDamage);
@@ -61,38 +79,17 @@ define(['module/HUD'],function(HUD){
             //dead
             }else{
                 this.unbindPlayerChannelEvents();
-                _game.state.start('End');
+                _game.postScore();
             }
         }
 
-    };
-
-    var _pressedLeft = function(pushData) {
-        _buttons.rightPressed = false;
-        _buttons.leftPressed = true;
-        this.update();
-    };
-
-    var _releasedLeft = function(pushData) {
-        _buttons.leftPressed = false;
-        this.update();
-    };
-
-    var _pressedRight = function(pushData) {
-        _buttons.leftPressed = false;
-        _buttons.rightPressed = true;
-        this.update();
-    };
-
-    var _releasedRight = function(pushData) {
-        _buttons.rightPressed = false;
-        this.update();
     };
 
 
     return {
         init: function(game){
             _game = game;
+            _game.postScore = postScore;
         },
         preload: function(){
             _game.load.image('ship', 'assets/img/player.png');
@@ -114,7 +111,7 @@ define(['module/HUD'],function(HUD){
             // Subscribe to left and right key presses and releases
             this.bindPlayerChannelEvents();
         },
-        update: function(){
+        update: function() {
             _ship.body.velocity.setTo(0,0);
 
             if(_buttons.leftPressed){
@@ -124,16 +121,34 @@ define(['module/HUD'],function(HUD){
             }
         },
         bindPlayerChannelEvents: function() {
-            _game.pushChannel.bind('press_l', _pressedLeft);
-            _game.pushChannel.bind('release_l', _releasedLeft);
-            _game.pushChannel.bind('press_r', _pressedRight);
-            _game.pushChannel.bind('release_r', _releasedRight);
+            _game.pushChannel.bind('press_l', this.pressedLeft.bind(this));
+            _game.pushChannel.bind('release_l', this.releasedLeft.bind(this));
+            _game.pushChannel.bind('press_r', this.pressedRight.bind(this));
+            _game.pushChannel.bind('release_r', this.releasedRight.bind(this));
         },
         unbindPlayerChannelEvents: function() {
-            _game.pushChannel.unbind('press_l', _pressedLeft);
-            _game.pushChannel.unbind('release_l', _releasedLeft);
-            _game.pushChannel.unbind('press_r', _pressedRight);
-            _game.pushChannel.unbind('release_r', _releasedRight);
+            _game.pushChannel.unbind('press_l', this.pressedLeft.bind(this));
+            _game.pushChannel.unbind('release_l', this.releasedLeft.bind(this));
+            _game.pushChannel.unbind('press_r', this.pressedRight.bind(this));
+            _game.pushChannel.unbind('release_r', this.releasedRight.bind(this));
+        },
+        pressedLeft: function(pushData) {
+            _buttons.rightPressed = false;
+            _buttons.leftPressed = true;
+            this.update();
+        },
+        releasedLeft: function(pushData) {
+            _buttons.leftPressed = false;
+            this.update();
+        },
+        pressedRight: function(pushData) {
+            _buttons.leftPressed = false;
+            _buttons.rightPressed = true;
+            this.update();
+        },
+        releasedRight: function(pushData) {
+            _buttons.rightPressed = false;
+            this.update();
         },
         setBulletGroup: function(bullets){
             _bulletGroup = bullets.getBulletGroup();
